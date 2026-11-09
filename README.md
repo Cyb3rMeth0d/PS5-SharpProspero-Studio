@@ -1,73 +1,234 @@
-# SharpProspero Studio — EXE privado de pruebas
+ <div align="center">
 
-> **Uso exclusivamente privado para pruebas. No compartir, publicar ni redistribuir este ejecutable ni el módulo que lleva integrado.**
+# 🎮 SharpProspero Studio
 
-Este documento describe cómo funciona `dist-private\SharpProsperoStudio.exe`, qué incluye y dónde deja sus archivos al iniciarse.
+**A Native C# Development & Packaging Environment**
 
-## Qué incluye
+<p>
+  <img src="https://img.shields.io/badge/PLATFORM-WINDOWS-0078D6?style=flat-square&logo=windows&logoColor=white" />
+  <img src="https://img.shields.io/badge/PIPELINE-WSL2%20%2F%20NATIVEAOT-FCC624?style=flat-square&logo=linux&logoColor=black" />
+  <img src="https://img.shields.io/badge/FRAMEWORK-.NET%2010-512BD4?style=flat-square&logo=dotnet&logoColor=white" />
+  <img src="https://img.shields.io/badge/DISTRIBUTION-PRIVATE%20BUILD-CC3333?style=flat-square" />
+</p>
 
-El EXE privado es un único ejecutable de Windows. Lleva integrados:
+*Un entorno integrado para el desarrollo, compilación y empaquetado de aplicaciones nativas en C#.*
 
-- El lanzador de escritorio, el servidor local y los recursos de la interfaz.
-- El código fuente SharpProspero incluido para esta build y 17 muestras de aplicaciones.
-- Un ZIP de módulos locales, entre ellos `libc.prx`, proporcionado mediante `-PrivateModulesPath` al generar la build privada.
+<br/>
 
-No incluye WSL ni .NET 10 para Windows/Linux; tampoco incluye un SDK propietario de Sony ni el empaquetador redistribuible de `.pkg`. Por ello, genera carpetas compiladas y sigue necesitando las dependencias de compilación instaladas en el equipo.
+<img src="https://i.ibb.co/9kGKYxCd/Captura-de-pantalla-2026-11-09-223633.png" alt="SharpProspero Studio Interface" width="100%" />
 
-## Qué ocurre al abrirlo
+<br/>
 
-1. El lanzador extrae la interfaz a `%LOCALAPPDATA%\SharpProsperoStudio\app`.
-2. Extrae el código fuente del compilador a `%LOCALAPPDATA%\SharpProsperoStudio\toolchains\<huella-del-paquete>`. La huella identifica la versión del bundle.
-3. Extrae los módulos privados a `%LOCALAPPDATA%\SharpProsperoStudio\private-modules\<huella-del-paquete>`.
-4. Si no hay una carpeta de módulos configurada que contenga `libc.prx`, selecciona automáticamente esa carpeta privada. Guarda las rutas del lanzador en `%LOCALAPPDATA%\SharpProsperoStudio\settings.json`.
-5. Inicia el servidor en una dirección local `127.0.0.1` y abre la interfaz en el navegador. La ventana del lanzador debe permanecer abierta mientras se usa Studio.
+**PRIVATE SOFTWARE · WINDOWS ECOSYSTEM · NATIVE TOOLCHAIN**
 
-Los archivos extraídos permanecen en `%LOCALAPPDATA%` después de cerrar Studio para que no tenga que desempaquetarlos en cada inicio.
+---
 
-## Cómo compila
+</div>
 
-Al solicitar una build, Studio ejecuta el `build\build-app.ps1` del SDK seleccionado. En Windows, el pipeline usa WSL2 para la fase NativeAOT y después ejecuta las herramientas SharpProspero que enlazan y preparan la aplicación:
+## 01 — Overview
 
-1. Compila el proyecto C# para producir el objeto nativo.
-2. Enlaza el objeto y genera `eboot.bin`.
-3. Reúne metadatos, recursos y los módulos que la aplicación necesita.
-4. Asigna un Title ID `PPSA` nuevo por build y actualiza los metadatos de salida. En `prospero-app`, sustituye también los placeholders de Title ID y Content ID.
-5. Genera la salida en carpeta. La distribución no genera `.pkg`.
+**SharpProspero Studio** es un entorno de desarrollo integrado que centraliza el ciclo de vida de aplicaciones nativas en C#, desde la gestión del SDK hasta la generación de los artefactos finales.
 
-El `libc.prx` privado se usa como recurso local cuando el pipeline necesita reunir el módulo en `sce_module`. El paso de comprobación notifica la dependencia faltante en vez de producir una salida incompleta.
+Esta edición privada se distribuye como un ejecutable autónomo para Windows, con los componentes esenciales del entorno integrados en un único paquete.
 
-## Dónde están los resultados
+### What's included
 
-Las compilaciones de las muestras incluidas se guardan bajo la carpeta del SDK extraído, por ejemplo:
+| Component | Description |
+|:--|:--|
+| 🖥️ **Desktop Launcher** | Interfaz gráfica moderna, servidor local y recursos integrados. |
+| 📚 **SharpProspero SDK** | Código fuente completo preparado para esta compilación. |
+| 🧪 **Application Samples** | 17 proyectos de ejemplo listos para utilizar. |
+| 🧩 **Private Modules** | Paquete local de módulos compatibles, incluyendo `libc.prx`. |
+| ⚙️ **Build Pipeline** | Integración con WSL2, NativeAOT y herramientas de SharpProspero. |
+
+> **Distribution Notice**
+>
+> El ejecutable no incluye WSL2, .NET 10 para Windows/Linux, herramientas propietarias de Sony ni el empaquetador redistribuible de `.pkg`.
+>
+> Studio genera estructuras de salida preparadas para su ejecución, pero las dependencias externas deben estar correctamente instaladas y configuradas en el sistema anfitrión.
+
+---
+
+## 02 — Build Architecture
+
+El proceso de compilación delega las operaciones en el script `build\build-app.ps1` del SDK activo.
+
+La arquitectura combina la compilación NativeAOT mediante WSL2 con el enlazado y procesamiento de los componentes específicos de SharpProspero.
+
+### Compilation pipeline
 
 ```text
-%LOCALAPPDATA%\SharpProsperoStudio\toolchains\<huella-del-paquete>\samples\prospero-arcade\out\module
+             C# APPLICATION
+                    │
+                    ▼
+          WSL2 + NATIVEAOT
+                    │
+                    ▼
+             NATIVE OBJECT
+                    │
+                    ▼
+             LINKING STAGE
+                    │
+                    ▼
+              eboot.bin
+                    │
+                    ▼
+       sce_module / libc.prx
+                    │
+                    ▼
+             OUTPUT DIRECTORY
 ```
 
-La ruta exacta se muestra en Studio al terminar. Dentro de `out\module` se encuentran `eboot.bin`, los metadatos de `sce_sys` y, cuando se necesita, el módulo en `sce_module`.
+**Build components**
 
-## Requisitos
+- **NativeAOT:** generación de código nativo.
+- **WSL2:** entorno de compilación Linux.
+- **Linking:** integración de los artefactos generados.
+- **Module Injection:** incorporación de módulos compatibles.
+- **Output:** generación de la estructura final del proyecto.
 
-- Windows con .NET 10 SDK.
-- WSL2 con una distribución Linux configurada, .NET 10, `clang` y `zlib1g-dev`.
+---
 
-El lanzador comprueba y muestra el estado de .NET y WSL, pero no instala estos componentes.
+## 03 — Installation
 
-## Cómo se generó esta build privada
+### Step 01 · Extract & Launch
 
-Desde PowerShell, en el directorio `build\visual-preview`, se puede regenerar indicando una carpeta cuyo `libc.prx` esté directamente en la raíz:
+Descarga y extrae el paquete de distribución:
 
-```powershell
-.\build-distribution.ps1 -PrivateModulesPath "C:\ruta\SharpProspero\samples\prospero-arcade\sce_module"
+`SharpProsperoStudio_Beta.rar` o `.zip`
+
+La estructura del directorio debe contener el ejecutable principal y las dos carpetas de dependencias privadas:
+
+```text
+SharpProsperoStudio_Beta/
+│
+├── SharpProsperoStudio.exe
+│
+├── toolchains/
+│   └── <TOOLCHAIN_HASH>/
+│
+└── private-modules/
+    └── <MODULES_HASH>/
+        └── libc.prx
 ```
 
-El ejecutable se crea en `dist-private\SharpProsperoStudio.exe`, separado de la edición pública `dist\SharpProsperoStudio.exe`. Sin `-PrivateModulesPath`, el script no incrusta módulos privados y genera la edición pública.
+Una vez extraído:
 
-## Límites y precauciones
+1. Ejecuta `SharpProsperoStudio.exe`.
+2. El servidor local se iniciará automáticamente.
+3. La interfaz web se abrirá en el navegador predeterminado.
 
-- Esta es una build de pruebas, no una distribución pública. El ejecutable incrusta un módulo binario local y debe permanecer en el entorno privado autorizado.
-- `libc.prx` debe ser compatible con la aplicación y el entorno de ejecución; incluirlo no garantiza que cualquier muestra o proyecto funcione en todas las consolas.
-- No distribuye el SDK oficial de Sony ni instala dependencias externas.
-- La salida es una carpeta compilada, no un `.pkg`.
-- El servicio solo debe usarse en `127.0.0.1`; no lo expongas a la red.
-- No cierres el lanzador mientras una compilación siga activa.
+---
+
+### Step 02 · SDK Configuration
+
+Antes de compilar, es necesario configurar las rutas de las dependencias locales.
+
+Accede a:
+
+**Settings → SharpProspero SDK**
+
+En esta sección encontrarás dos campos de configuración.
+
+#### ① SharpProspero Root Directory
+
+<kbd>TOOLCHAIN PATH</kbd>
+
+Selecciona la carpeta raíz del SDK ubicada dentro de `toolchains/`.
+
+Ejemplo:
+
+```text
+C:\...\SharpProsperoStudio_Beta\toolchains\6EA3ECC25...
+```
+
+#### ② Compatible Modules Directory
+
+<kbd>PRIVATE MODULES PATH</kbd>
+
+Selecciona la carpeta que contiene los módulos compatibles, ubicada dentro de `private-modules/`.
+
+Ejemplo:
+
+```text
+C:\...\SharpProsperoStudio_Beta\private-modules\42D4FD0...
+```
+
+> [!IMPORTANT]
+> **Requisito de `libc.prx`**
+>
+> El archivo `libc.prx` debe encontrarse directamente en la raíz de la carpeta configurada en *Compatible Modules Directory*.
+>
+> No debe estar dentro de subdirectorios adicionales.
+
+**Configuración esperada:**
+
+```text
+42D4FD0.../
+│
+├── libc.prx
+└── ...
+```
+
+> [!WARNING]
+> **Host Dependencies**
+>
+> El SDK proporciona las herramientas y el código fuente del compilador, pero los siguientes componentes deben estar instalados previamente:
+>
+> - .NET 10
+> - WSL2
+> - Entorno Linux compatible con el pipeline NativeAOT.
+
+---
+
+### Step 03 · Save & Build
+
+Una vez configuradas las dependencias:
+
+1. Pulsa **Save Paths** para guardar las rutas del SDK.
+2. Selecciona la muestra o el proyecto que quieras compilar.
+3. Pulsa **Build** para iniciar el proceso.
+4. Espera a que finalice el pipeline de compilación y enlazado.
+
+Los artefactos generados se almacenarán en el directorio correspondiente:
+
+```text
+<PROJECT>/
+│
+└── out/
+    └── module/
+        ├── eboot.bin
+        ├── sce_module
+        └── ...
+```
+
+<sub>La estructura y los archivos concretos dependerán del proyecto y de los módulos utilizados.</sub>
+
+---
+
+## 04 — System Requirements
+
+| Dependency | Requirement |
+|:--|:--|
+| Operating System | Windows |
+| Runtime | .NET 10 |
+| Linux Environment | WSL2 |
+| Compiler Pipeline | NativeAOT |
+| SDK | SharpProspero |
+| Private Modules | Compatible modules + `libc.prx` |
+| Additional Tooling | Sony proprietary tools (where required) |
+
+---
+
+<div align="center">
+
+## SharpProspero Studio
+
+
+*Built for native development. Designed for streamlined workflows.*
+
+<br/>
+
+<sub>PRIVATE BUILD · NOT AN OFFICIAL SONY PRODUCT</sub>
+
+</div>
