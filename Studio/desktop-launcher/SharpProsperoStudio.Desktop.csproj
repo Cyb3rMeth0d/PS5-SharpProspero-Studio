@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AssemblyName>SharpProsperoStudio</AssemblyName>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishDir>$(MSBuildThisFileDirectory)..\dist\</PublishDir>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\index.html" LogicalName="SharpProsperoStudio.Assets.index.html" />
+    <EmbeddedResource Include="..\style.css" LogicalName="SharpProsperoStudio.Assets.style.css" />
+    <EmbeddedResource Include="..\demo.js" LogicalName="SharpProsperoStudio.Assets.demo.js" />
+    <EmbeddedResource Include="..\server.ps1" LogicalName="SharpProsperoStudio.Assets.server.ps1" />
+    <EmbeddedResource Include="..\run-build.ps1" LogicalName="SharpProsperoStudio.Assets.run-build.ps1" />
+    <EmbeddedResource Include="..\Yo-Removebg.png" LogicalName="SharpProsperoStudio.Assets.Yo-Removebg.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)obj\compiler-toolchain.zip" LogicalName="SharpProsperoStudio.Assets.compiler-toolchain.zip" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)obj\private-modules.zip" LogicalName="SharpProsperoStudio.Assets.private-modules.zip" Condition="Exists('$(MSBuildThisFileDirectory)obj\private-modules.zip')" />
+  </ItemGroup>
+</Project>

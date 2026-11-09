@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <SharpProsperoRoot Condition="'$(SharpProsperoRoot)' == ''">$(SHARPPROSPERO_ROOT)</SharpProsperoRoot>
+  </PropertyGroup>
+
+  <Import Project="$(SharpProsperoRoot)\build\Prospero.App.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>NeonArcade</RootNamespace>
+    <AssemblyName>NeonArcade</AssemblyName>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ProsperoModuleName>eboot.bin</ProsperoModuleName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SharpProsperoRoot)\src\SharpProspero\SharpProspero.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="sce_sys\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Import Project="$(SharpProsperoRoot)\build\Prospero.App.targets" />
+
+</Project>

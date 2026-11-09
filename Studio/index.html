@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#04152d">
+  <title>SharpProspero Studio</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="screen">
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <svg class="wave" viewBox="0 0 1600 420" preserveAspectRatio="none" aria-hidden="true">
+      <path class="wave-back" d="M0 245 C170 235 198 110 350 165 S568 320 742 215 974 96 1110 198 1320 285 1456 168 1550 115 1600 130"/>
+      <path class="wave-front" d="M0 265 C154 254 204 148 350 194 S582 300 754 232 960 135 1114 218 1310 282 1452 192 1556 148 1600 160"/>
+    </svg>
+    <div class="particles" aria-hidden="true"></div>
+
+    <div class="layout studio-layout">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <div>
+            <h1>SharpProspero Studio <span class="version">BETA</span></h1>
+            <p class="subtitle">COMPILADOR LOCAL DE HOMEBREW <span class="dot"></span> WINDOWS</p>
+          </div>
+        </div>
+        <div class="connection-pill" id="connection-state" role="status">
+          <span class="live-dot"></span>
+          <span>Conectando al servicio local…</span>
+        </div>
+      </header>
+
+      <section class="studio-intro">
+        <div>
+          <p class="eyebrow">CENTRO DE DESARROLLO PROSPERO</p>
+          <h2>Prepara tu próxima build.</h2>
+          <p class="intro-copy">Selecciona un proyecto de aplicación SharpProspero y genera la salida compilada en el formato disponible.</p>
+        </div>
+        <div class="sdk-card">
+          <span class="sdk-orb" aria-hidden="true">⌘</span>
+          <span><strong id="sdk-summary">Buscando SDK</strong><small id="tool-summary">Comprobando herramientas…</small></span>
+          <button type="button" class="icon-button" id="toggle-settings" aria-label="Configurar ruta del SDK" title="Configurar ruta del SDK">⚙</button>
+        </div>
+      </section>
+
+      <section class="settings-panel" id="settings-panel" hidden>
+        <label for="sdk-root">Ruta raíz de SharpProspero</label>
+        <div class="settings-row">
+          <input id="sdk-root" type="text" spellcheck="false" placeholder="C:\ruta\SharpProspero">
+          <button class="button button-secondary" id="save-sdk" type="button">Guardar rutas</button>
+        </div>
+        <label for="module-root">Carpeta de módulos compatibles — coloca aquí la carpeta que contiene <code>libc.prx</code></label>
+        <div class="settings-row">
+          <input id="module-root" type="text" spellcheck="false" placeholder="C:\ruta\a\mis-modulos">
+        </div>
+        <p>Esta ruta va en el campo inferior, no en la raíz del SDK. El archivo <code>libc.prx</code> debe estar directamente dentro de la carpeta elegida.</p>
+        <p>El SDK contiene el código fuente del compilador. .NET 10, WSL2 y los módulos compatibles se instalan o aportan por separado.</p>
+      </section>
+
+      <section class="workspace">
+        <section class="build-card" aria-labelledby="build-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">CONFIGURACIÓN</p>
+              <h2 id="build-heading">Nueva compilación</h2>
+            </div>
+            <span class="build-index">01 <span>/</span> 02</span>
+          </div>
+
+          <form id="build-form">
+            <label class="field-label" for="custom-project">Proyecto propio (.csproj) <span class="optional-label">OPCIONAL</span></label>
+            <input class="project-path-input" id="custom-project" type="text" spellcheck="false" placeholder="C:\ruta\A\MiHomebrew.csproj">
+            <p class="field-help">Si indicas una ruta, se compilará ese proyecto en lugar de la muestra.</p>
+
+            <label class="field-label" for="project-select">Proyecto de aplicación</label>
+            <div class="select-wrap">
+              <select id="project-select" required disabled>
+                <option value="">Cargando muestras…</option>
+              </select>
+            </div>
+            <p class="field-help" id="project-help">Las muestras se detectan en la carpeta samples del SDK configurado.</p>
+            <p class="field-help">Cada build con metadatos de aplicación recibe automáticamente un Title ID PPSA distinto, también en proyectos propios.</p>
+
+            <fieldset class="output-options">
+              <legend>Formato de salida</legend>
+              <label class="output-choice selected" id="package-choice" data-output-choice="Package">
+                <input type="radio" name="output" value="Package" checked>
+                <span class="choice-icon">▣</span>
+                <span><strong>Paquete .pkg</strong><small>Listo para instalar</small></span>
+                <span class="choice-check" aria-hidden="true">✓</span>
+              </label>
+              <label class="output-choice" data-output-choice="Folder">
+                <input type="radio" name="output" value="Folder">
+                <span class="choice-icon">▤</span>
+                <span><strong>Carpeta</strong><small>Archivos de la aplicación</small></span>
+                <span class="choice-check" aria-hidden="true">✓</span>
+              </label>
+            </fieldset>
+            <p class="field-help" id="package-help" hidden>Esta distribución no incluye el empaquetador .pkg; se generará la carpeta completa de la aplicación.</p>
+
+            <div class="build-actions">
+              <button class="button button-primary" id="build-button" type="submit" disabled>
+                <span aria-hidden="true">✦</span> Compilar proyecto
+              </button>
+              <span class="build-note">Usa la configuración Release del pipeline oficial.</span>
+            </div>
+          </form>
+        </section>
+
+        <section class="log-card" aria-labelledby="log-heading">
+          <div class="log-header">
+            <div>
+              <p class="eyebrow">SALIDA DEL PROCESO</p>
+              <h2 id="log-heading">Registro de compilación</h2>
+            </div>
+            <span class="job-state state-idle" id="job-state"><span></span> EN ESPERA</span>
+          </div>
+          <div class="log-console" id="build-log" role="log" aria-live="polite" aria-relevant="additions text">
+            <p class="log-placeholder">El registro de la próxima compilación aparecerá aquí.</p>
+          </div>
+          <div class="log-footer">
+            <span id="job-detail">Sin compilaciones activas</span>
+            <button type="button" class="text-button" id="clear-log">Limpiar registro</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="environment-row" aria-label="Requisitos de compilación">
+        <div class="environment-title"><span class="environment-icon">◈</span><strong>Entorno de compilación</strong></div>
+        <div class="environment-item"><span class="status-dot" id="dot-dotnet"></span><span>.NET SDK</span><strong id="status-dotnet">Comprobando</strong></div>
+        <div class="environment-item"><span class="status-dot" id="dot-wsl"></span><span>WSL</span><strong id="status-wsl">Comprobando</strong></div>
+        <div class="environment-item"><span class="status-dot" id="dot-modules"></span><span>Módulos</span><strong id="status-modules">Comprobando</strong></div>
+        <span class="docs-link" id="environment-help">Comprueba los requisitos de compilación.</span>
+        <img class="environment-brand" src="./Yo-Removebg.png" alt="Cyb3rMethod" width="896" height="278">
+      </section>
+
+      <footer class="studio-footer">
+        <span>SharpProspero Studio · interfaz local</span>
+        <span>La compilación se ejecuta en este equipo; no se envían archivos a ningún servicio.</span>
+      </footer>
+    </div>
+  </main>
+  <script src="./demo.js"></script>
+</body>
+</html>
